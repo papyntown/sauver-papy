@@ -1,114 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
+import { createInitialState, gameReducer, MAX_STRIKES } from '#/game/reducer'
+import { EVENT_KINDS, EVENT_REGISTRY } from '#/game/registry'
+import { EventCard } from './EventCard'
 
-type EventType = 'hoquet' | 'dentier' | 'tension' | 'moustique'
-type StatKey = 'crises' | 'dentiers' | 'cafes' | 'anecdotes'
-
-interface EventDef {
-  type: EventType
-  name: string
-  desc: string
-  action: string
-  icon: string
-  iconBg: string
-  bg: string
-  barColor: string
-  anim: string
-  duration: number
-  statKey: 'crises' | 'dentiers'
-}
-
-interface ActiveEvent extends EventDef {
-  id: number
-  remainingMs: number
-}
-
-interface GameState {
-  remainingMs: number
-  elapsedMs: number
-  events: Array<ActiveEvent>
-  strikes: number
-  stats: Record<StatKey, number>
-  spawnIn: number
-  cafeIn: number
-  anecdoteIn: number
-}
-
-const START_MS = 180_000
-const MAX_STRIKES = 3
-const MISS_PENALTY_MS = 8_000
-const RESOLVE_BONUS_MS = 3_000
 const ESCALATE_AFTER_MS = 90_000
-
-const EVENT_DEFS: Array<EventDef> = [
-  {
-    type: 'hoquet',
-    name: 'HOQUET CHRONIQUE',
-    desc: 'Il a le hoquet. Depuis 40 minutes.',
-    action: 'FAIRE PEUR',
-    icon: '💨',
-    iconBg: '#ffd27a',
-    bg: '#ffe9b8',
-    barColor: '#ffb020',
-    anim: 'none',
-    duration: 9000,
-    statKey: 'crises',
-  },
-  {
-    type: 'dentier',
-    name: 'DENTIER EN CAVALE',
-    desc: 'Le dentier a bondi hors du lit.',
-    action: 'RÉCUPÉRER',
-    icon: '🦷',
-    iconBg: '#ffb3ac',
-    bg: '#ffd9d4',
-    barColor: '#e2402e',
-    anim: 'blinkRed .6s steps(1) infinite',
-    duration: 7000,
-    statKey: 'dentiers',
-  },
-  {
-    type: 'tension',
-    name: 'TENSION COSMIQUE',
-    desc: 'Tension : 320 / 210 mmHg.',
-    action: 'STABILISER',
-    icon: '📈',
-    iconBg: '#ffb3ac',
-    bg: '#ffd9d4',
-    barColor: '#e2402e',
-    anim: 'blinkRed .5s steps(1) infinite',
-    duration: 6500,
-    statKey: 'crises',
-  },
-  {
-    type: 'moustique',
-    name: 'MOUSTIQUE HOSTILE',
-    desc: 'Un moustique vise le nez.',
-    action: 'ÉCRASER',
-    icon: '🦟',
-    iconBg: '#ffd27a',
-    bg: '#ffe9b8',
-    barColor: '#ffb020',
-    anim: 'none',
-    duration: 8000,
-    statKey: 'crises',
-  },
-]
 
 function randRange(min: number, max: number) {
   return min + Math.random() * (max - min)
-}
-
-function initialGameState(): GameState {
-  return {
-    remainingMs: START_MS,
-    elapsedMs: 0,
-    events: [],
-    strikes: 0,
-    stats: { crises: 0, dentiers: 0, cafes: 0, anecdotes: 0 },
-    spawnIn: 2500,
-    cafeIn: randRange(15_000, 25_000),
-    anecdoteIn: randRange(8_000, 14_000),
-  }
 }
 
 function formatClock(ms: number) {
@@ -127,15 +25,25 @@ function formatSurvived(ms: number) {
 
 export default function PapyGame() {
   const [screen, setScreen] = useState<'title' | 'playing' | 'end'>('title')
-  const [game, setGame] = useState<GameState>(initialGameState)
+  const [game, dispatch] = useReducer(
+    gameReducer,
+    undefined,
+    createInitialState,
+  )
   const gameRef = useRef(game)
   gameRef.current = game
+
   const idRef = useRef(0)
   const lastTsRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(
     undefined,
   )
+  const spawnInRef = useRef(2500)
+  const cafeInRef = useRef(randRange(15_000, 25_000))
+  const anecdoteInRef = useRef(randRange(8_000, 14_000))
 
+  // The engine only schedules spawns and the ambient flavor stats — every
+  // event's own success/fail timing is handled inside its own component.
   useEffect(() => {
     if (screen !== 'playing') return
     lastTsRef.current = Date.now()
@@ -144,65 +52,34 @@ export default function PapyGame() {
       const ts = Date.now()
       const dt = ts - (lastTsRef.current ?? ts)
       lastTsRef.current = ts
+      dispatch({ type: 'TICK', dt })
+
       const g = gameRef.current
 
-      let remainingMs = g.remainingMs - dt
-      let strikes = g.strikes
-      const events: Array<ActiveEvent> = []
-      for (const ev of g.events) {
-        const r = ev.remainingMs - dt
-        if (r <= 0) {
-          strikes += 1
-          remainingMs -= MISS_PENALTY_MS
-        } else {
-          events.push({ ...ev, remainingMs: r })
-        }
-      }
-
-      const elapsedMs = g.elapsedMs + dt
-
-      let spawnIn = g.spawnIn - dt
-      if (spawnIn <= 0 && events.length < 3) {
-        const usedTypes = new Set(events.map((e) => e.type))
-        const pool = EVENT_DEFS.filter((d) => !usedTypes.has(d.type))
-        const candidates = pool.length ? pool : EVENT_DEFS
-        const def = candidates[Math.floor(Math.random() * candidates.length)]
+      spawnInRef.current -= dt
+      if (spawnInRef.current <= 0 && g.events.length < 3) {
+        const activeKinds = new Set(g.events.map((e) => e.kind))
+        const pool = EVENT_KINDS.filter((k) => !activeKinds.has(k))
+        const candidates = pool.length ? pool : EVENT_KINDS
+        const kind = candidates[Math.floor(Math.random() * candidates.length)]
         idRef.current += 1
-        events.push({ ...def, id: idRef.current, remainingMs: def.duration })
-        spawnIn =
-          elapsedMs > ESCALATE_AFTER_MS
+        dispatch({ type: 'SPAWN', id: idRef.current, kind })
+        spawnInRef.current =
+          g.elapsedMs > ESCALATE_AFTER_MS
             ? randRange(2200, 4200)
             : randRange(3200, 6200)
       }
 
-      const stats = { ...g.stats }
-      let cafeIn = g.cafeIn - dt
-      if (cafeIn <= 0) {
-        stats.cafes += 1
-        cafeIn = randRange(15_000, 25_000)
-      }
-      let anecdoteIn = g.anecdoteIn - dt
-      if (anecdoteIn <= 0) {
-        stats.anecdotes += 1
-        anecdoteIn = randRange(8_000, 14_000)
+      cafeInRef.current -= dt
+      if (cafeInRef.current <= 0) {
+        dispatch({ type: 'STAT_TICK', key: 'cafes' })
+        cafeInRef.current = randRange(15_000, 25_000)
       }
 
-      const next: GameState = {
-        remainingMs: Math.max(0, remainingMs),
-        elapsedMs,
-        events,
-        strikes,
-        stats,
-        spawnIn,
-        cafeIn,
-        anecdoteIn,
-      }
-      gameRef.current = next
-      setGame(next)
-
-      if (next.remainingMs <= 0 || next.strikes >= MAX_STRIKES) {
-        setScreen('end')
-        if (intervalRef.current) clearInterval(intervalRef.current)
+      anecdoteInRef.current -= dt
+      if (anecdoteInRef.current <= 0) {
+        dispatch({ type: 'STAT_TICK', key: 'anecdotes' })
+        anecdoteInRef.current = randRange(8_000, 14_000)
       }
     }
 
@@ -212,27 +89,22 @@ export default function PapyGame() {
     }
   }, [screen])
 
+  useEffect(() => {
+    if (
+      screen === 'playing' &&
+      (game.remainingMs <= 0 || game.strikes >= MAX_STRIKES)
+    ) {
+      setScreen('end')
+    }
+  }, [screen, game.remainingMs, game.strikes])
+
   function startGame() {
     idRef.current = 0
-    const g = initialGameState()
-    gameRef.current = g
-    setGame(g)
+    spawnInRef.current = 2500
+    cafeInRef.current = randRange(15_000, 25_000)
+    anecdoteInRef.current = randRange(8_000, 14_000)
+    dispatch({ type: 'RESET' })
     setScreen('playing')
-  }
-
-  function resolveEvent(id: number) {
-    setGame((g) => {
-      const ev = g.events.find((e) => e.id === id)
-      if (!ev) return g
-      const next: GameState = {
-        ...g,
-        events: g.events.filter((e) => e.id !== id),
-        remainingMs: g.remainingMs + RESOLVE_BONUS_MS,
-        stats: { ...g.stats, [ev.statKey]: g.stats[ev.statKey] + 1 },
-      }
-      gameRef.current = next
-      return next
-    })
   }
 
   const isTitle = screen === 'title'
@@ -1493,111 +1365,14 @@ export default function PapyGame() {
                     minHeight: '8cqw',
                   }}
                 >
-                  {game.events.map((ev) => {
-                    const progress = Math.min(
-                      100,
-                      ((ev.duration - ev.remainingMs) / ev.duration) * 100,
-                    )
-                    return (
-                      <div
-                        key={ev.id}
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '.7cqw',
-                          background: ev.bg,
-                          border: '0.5cqw solid #16201c',
-                          borderRadius: '1cqw',
-                          padding: '.6cqw .7cqw',
-                          boxShadow: '0 .6cqw 0 rgba(0,0,0,.25)',
-                          animation: ev.anim,
-                        }}
-                      >
-                        <div
-                          style={{
-                            flex: '0 0 auto',
-                            width: '4cqw',
-                            height: '4cqw',
-                            background: ev.iconBg,
-                            border: '0.45cqw solid #16201c',
-                            borderRadius: '.9cqw',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '2.2cqw',
-                          }}
-                        >
-                          {ev.icon}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontFamily: "'Fredoka'",
-                              fontWeight: 700,
-                              fontSize: '1.3cqw',
-                              color: '#16201c',
-                              lineHeight: 1,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {ev.name}
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: "'Fredoka'",
-                              fontWeight: 500,
-                              fontSize: '1.02cqw',
-                              color: '#2c3a33',
-                              margin: '.2cqw 0 .4cqw',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {ev.desc}
-                          </div>
-                          <div
-                            style={{
-                              height: '.9cqw',
-                              background: '#ffffffaa',
-                              border: '0.25cqw solid #16201c',
-                              borderRadius: '1cqw',
-                              overflow: 'hidden',
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: '100%',
-                                width: `${progress}%`,
-                                background: ev.barColor,
-                              }}
-                            />
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => resolveEvent(ev.id)}
-                          style={{
-                            flex: '0 0 auto',
-                            fontFamily: "'Bungee'",
-                            fontSize: '1cqw',
-                            color: '#fff4d8',
-                            background: '#16201c',
-                            border: 'none',
-                            borderRadius: '.6cqw',
-                            padding: '.6cqw .7cqw',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {ev.action}
-                        </button>
-                      </div>
-                    )
-                  })}
+                  {game.events.map((ev) => (
+                    <EventCard
+                      key={ev.id}
+                      id={ev.id}
+                      def={EVENT_REGISTRY[ev.kind]}
+                      dispatch={dispatch}
+                    />
+                  ))}
                   {activeCount === 0 && (
                     <div
                       style={{

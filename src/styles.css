@@ -124,3 +124,32 @@ body {
     transform: scaleX(0.96);
   }
 }
+@keyframes shrinkBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+@keyframes shakeX {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-15%);
+  }
+  75% {
+    transform: translateX(15%);
+  }
+}
+@keyframes resistShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3%);
+  }
+}
