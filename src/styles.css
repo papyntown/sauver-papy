@@ -1,5 +1,4 @@
-
-@import "tailwindcss";
+@import 'tailwindcss';
 
 * {
   box-sizing: border-box;
@@ -15,3 +14,113 @@ body {
   margin: 0;
 }
 
+@keyframes ekgMove {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.045);
+  }
+}
+@keyframes blinkRed {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+@keyframes drip {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(320%);
+    opacity: 0;
+  }
+}
+@keyframes zzz {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(60%, -160%) rotate(12deg);
+    opacity: 0;
+  }
+}
+@keyframes panicPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.52;
+  }
+}
+@keyframes roomShake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-0.5%, 0.4%);
+  }
+  40% {
+    transform: translate(0.5%, -0.3%);
+  }
+  60% {
+    transform: translate(-0.3%, -0.4%);
+  }
+  80% {
+    transform: translate(0.4%, 0.3%);
+  }
+}
+@keyframes pulseBtn {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+@keyframes sweatDrop {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(220%);
+    opacity: 0;
+  }
+}
+@keyframes bagWobble {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.96);
+  }
+}
