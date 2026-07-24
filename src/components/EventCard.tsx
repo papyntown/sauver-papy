@@ -43,22 +43,6 @@ export function EventCard({ def, id, dispatch }: EventCardProps) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '.7cqw' }}>
-        <div
-          style={{
-            flex: '0 0 auto',
-            width: '4cqw',
-            height: '4cqw',
-            background: '#ffd27a',
-            border: '0.45cqw solid #16201c',
-            borderRadius: '.9cqw',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2.2cqw',
-          }}
-        >
-          {def.icon}
-        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{

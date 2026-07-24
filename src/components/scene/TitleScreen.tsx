@@ -50,7 +50,7 @@ export function TitleScreen({ onPlay }: TitleScreenProps) {
             letterSpacing: '.15cqw',
           }}
         >
-          ⚠ URGENCES GÉRIATRIQUES ⚠
+          URGENCES GÉRIATRIQUES
         </div>
         <div
           style={{
@@ -111,7 +111,7 @@ export function TitleScreen({ onPlay }: TitleScreenProps) {
           animation: 'pulseBtn 1.1s ease-in-out infinite',
         }}
       >
-        ▶ JOUER
+        JOUER
       </button>
       <div
         style={{

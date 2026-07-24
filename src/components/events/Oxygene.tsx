@@ -50,18 +50,28 @@ export function Oxygene({ onSuccess, onFail, timeLimitMs }: MiniGameProps) {
             onClick={() => pump(side)}
             style={{
               flex: 1,
-              fontFamily: "'Bungee'",
-              fontSize: '1.1cqw',
-              color: '#fff4d8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: '#16201c',
               border: 'none',
               borderRadius: '.6cqw',
-              padding: '.5cqw 0',
+              padding: '.7cqw 0',
               cursor: 'pointer',
               animation: buzz === side ? 'shakeX .15s linear' : 'none',
             }}
           >
-            {side === 'l' ? '◀' : '▶'}
+            <span
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: '.5cqw solid transparent',
+                borderBottom: '.5cqw solid transparent',
+                ...(side === 'l'
+                  ? { borderRight: '.7cqw solid #fff4d8' }
+                  : { borderLeft: '.7cqw solid #fff4d8' }),
+              }}
+            />
           </button>
         ))}
       </div>

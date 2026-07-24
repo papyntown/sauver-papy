@@ -90,10 +90,10 @@ export function EndScreen({ elapsedMs, stats, onReplay }: EndScreenProps) {
         }}
       >
         {[
-          ['🚨 Crises gérées', stats.crises],
-          ['🦷 Dentiers rattrapés', stats.dentiers],
-          ['☕ Cafés renversés', stats.cafes],
-          ['👻 Anecdotes racontées', stats.anecdotes],
+          ['Crises gérées', stats.crises],
+          ['Dentiers rattrapés', stats.dentiers],
+          ['Cafés renversés', stats.cafes],
+          ['Anecdotes racontées', stats.anecdotes],
         ].map(([label, value]) => (
           <div
             key={label as string}
@@ -151,7 +151,7 @@ export function EndScreen({ elapsedMs, stats, onReplay }: EndScreenProps) {
           boxShadow: '0 0.9cqw 0 #000',
         }}
       >
-        ↺ REJOUER
+        REJOUER
       </button>
     </div>
   )

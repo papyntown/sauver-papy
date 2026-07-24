@@ -25,15 +25,9 @@ export function CableDebranche({
             borderRadius: '.7cqw',
             background: color,
             border: '0.35cqw solid #16201c',
-            fontSize: '1.6cqw',
             cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
-        >
-          🔌
-        </button>
+        />
       ))}
     </div>
   )

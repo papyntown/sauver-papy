@@ -75,15 +75,9 @@ export function PerfusionVide({
           height: '3cqw',
           borderRadius: '50%',
           border: '0.3cqw dashed #16201c',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.6cqw',
           opacity: 0.7,
         }}
-      >
-        🪝
-      </div>
+      />
       <div
         ref={bagRef}
         onPointerDown={onPointerDown}
@@ -96,17 +90,11 @@ export function PerfusionVide({
           borderRadius: '50%',
           background: '#f4b73f',
           border: '0.3cqw solid #16201c',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.6cqw',
           cursor: dragging ? 'grabbing' : 'grab',
           touchAction: 'none',
           userSelect: 'none',
         }}
-      >
-        💧
-      </div>
+      />
       <div
         style={{
           fontFamily: "'Fredoka'",

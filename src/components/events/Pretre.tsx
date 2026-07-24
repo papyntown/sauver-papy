@@ -56,13 +56,14 @@ export function Pretre({ onSuccess, onFail, timeLimitMs }: MiniGameProps) {
       <span
         style={{
           display: 'inline-block',
-          fontSize: '1.6cqw',
+          width: '1.6cqw',
+          height: '1.6cqw',
+          borderRadius: '50% 50% 0 0',
+          background: '#fff4d8',
           transition: 'transform .3s ease',
           transform: present ? 'translateX(0)' : 'translateX(150%)',
         }}
-      >
-        🙏
-      </span>
+      />
       REPOUSSER
     </button>
   )

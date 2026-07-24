@@ -30,7 +30,6 @@ export interface EventDef {
   kind: EventKind
   name: string
   desc: string
-  icon: string
   accent: string
   anim: string
   timeLimitMs: number
