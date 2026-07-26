@@ -35,6 +35,13 @@ export interface EventDef {
   timeLimitMs: number
   statKey: StatKey
   Component: ComponentType<MiniGameProps>
+  /**
+   * 'card' (default): rendered in the bottom emergency bar, like today.
+   * 'scene': rendered by the mini-game itself, positioned directly over the
+   * room decor — the mini-game owns its own absolute placement + floating
+   * label, and is skipped by the card bar entirely.
+   */
+  placement?: 'card' | 'scene'
 }
 
 export interface ActiveEvent {

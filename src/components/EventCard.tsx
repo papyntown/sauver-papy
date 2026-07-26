@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
 import type { Dispatch } from 'react'
 import type { EventDef, GameAction } from '#/game/types'
+import { useEventOutcome } from '#/game/useEventOutcome'
 
 interface EventCardProps {
   def: EventDef
@@ -9,21 +9,13 @@ interface EventCardProps {
 }
 
 /**
- * Generic chrome shared by every event: icon/name/desc header, a CSS-only
- * shrinking timer bar, and a slot for the registry's mini-game component.
- * onSuccess/onFail are memoized so a mini-game's internal setTimeout (see
- * useAutoFail) never gets reset by the parent's per-tick re-renders.
+ * Generic chrome shared by every card-placed event: name/desc header, a
+ * CSS-only shrinking timer bar, and a slot for the registry's mini-game
+ * component. 'scene'-placed events (see EventDef.placement) skip this
+ * entirely — they render themselves over the room decor instead.
  */
 export function EventCard({ def, id, dispatch }: EventCardProps) {
-  const onSuccess = useCallback(
-    () => dispatch({ type: 'RESOLVE', id, statKey: def.statKey }),
-    [dispatch, id, def.statKey],
-  )
-  const onFail = useCallback(
-    () => dispatch({ type: 'MISS', id }),
-    [dispatch, id],
-  )
-
+  const { onSuccess, onFail } = useEventOutcome(dispatch, id, def.statKey)
   const Component = def.Component
 
   return (

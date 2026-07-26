@@ -1,11 +1,14 @@
 import type { Dispatch } from 'react'
 import type { GameAction, GameState } from '#/game/types'
 import { getVitals } from '#/game/derived'
+import { EVENT_REGISTRY } from '#/game/registry'
 import { LifeCounter } from './LifeCounter'
 import { CardiacMonitor } from './CardiacMonitor'
 import { IVStand } from './IVStand'
 import { Bed } from './Bed'
+import { Door } from './Door'
 import { EventsBar } from './EventsBar'
+import { SceneEventHost } from './SceneEventHost'
 
 interface GameScreenProps {
   game: GameState
@@ -14,6 +17,14 @@ interface GameScreenProps {
 
 export function GameScreen({ game, dispatch }: GameScreenProps) {
   const vitals = getVitals(game, true)
+
+  const cardEvents = game.events.filter(
+    (ev) => (EVENT_REGISTRY[ev.kind].placement ?? 'card') === 'card',
+  )
+  const sceneEvents = game.events.filter(
+    (ev) => EVENT_REGISTRY[ev.kind].placement === 'scene',
+  )
+  const isPretreActive = game.events.some((ev) => ev.kind === 'pretre')
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
@@ -28,6 +39,8 @@ export function GameScreen({ game, dispatch }: GameScreenProps) {
 
       <IVStand dripSpeed={vitals.dripSpeed} />
 
+      <Door isOpen={isPretreActive} />
+
       <Bed
         isCalm={vitals.isCalm}
         isAlert={vitals.isAlert}
@@ -38,7 +51,20 @@ export function GameScreen({ game, dispatch }: GameScreenProps) {
         breatheSpeed={vitals.breatheSpeed}
       />
 
-      <EventsBar events={game.events} dispatch={dispatch} />
+      {sceneEvents.map((ev) => (
+        <SceneEventHost
+          key={ev.id}
+          id={ev.id}
+          def={EVENT_REGISTRY[ev.kind]}
+          dispatch={dispatch}
+        />
+      ))}
+
+      <EventsBar
+        events={cardEvents}
+        activeCount={game.events.length}
+        dispatch={dispatch}
+      />
 
       <div
         style={{

@@ -5,10 +5,11 @@ import { EventCard } from '../EventCard'
 
 interface EventsBarProps {
   events: Array<ActiveEvent>
+  activeCount: number
   dispatch: Dispatch<GameAction>
 }
 
-export function EventsBar({ events, dispatch }: EventsBarProps) {
+export function EventsBar({ events, activeCount, dispatch }: EventsBarProps) {
   return (
     <div
       style={{
@@ -39,7 +40,7 @@ export function EventsBar({ events, dispatch }: EventsBarProps) {
         >
           URGENCES
           <br />
-          ACTIVES <span style={{ color: '#e2402e' }}>{events.length}/3</span>
+          ACTIVES <span style={{ color: '#e2402e' }}>{activeCount}/3</span>
         </div>
         <div
           style={{
@@ -57,7 +58,7 @@ export function EventsBar({ events, dispatch }: EventsBarProps) {
               dispatch={dispatch}
             />
           ))}
-          {events.length === 0 && (
+          {activeCount === 0 && (
             <div
               style={{
                 flex: 1,

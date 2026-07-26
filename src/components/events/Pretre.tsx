@@ -1,70 +1,77 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { MiniGameProps } from '#/game/types'
 import { useAutoFail } from './useAutoFail'
+import { SceneEventLabel } from '../scene/SceneEventLabel'
+import { DOOR_POSITION } from '../scene/doorPosition'
 
-const RETURN_DELAY_MS = 700
-const LEAVE_DELAY_MS = 300
-const PUSHES_NEEDED = 3
-
-/** Push him away; he comes back twice before finally leaving for good. */
+/** He approaches through the door — click to shut it on him before he arrives. */
 export function Pretre({ onSuccess, onFail, timeLimitMs }: MiniGameProps) {
   useAutoFail(onFail, timeLimitMs)
-  const [pushCount, setPushCount] = useState(0)
-  const [present, setPresent] = useState(true)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  )
+  const figureRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [])
-
-  function push() {
-    if (!present) return
-    const count = pushCount + 1
-    setPushCount(count)
-    setPresent(false)
-    if (count >= PUSHES_NEEDED) {
-      timeoutRef.current = setTimeout(onSuccess, LEAVE_DELAY_MS)
-    } else {
-      timeoutRef.current = setTimeout(() => setPresent(true), RETURN_DELAY_MS)
-    }
-  }
+    const el = figureRef.current
+    if (!el) return
+    el.style.transition = 'none'
+    el.style.transform = 'translateY(40%) scale(0.55)'
+    requestAnimationFrame(() => {
+      el.style.transition = `transform ${timeLimitMs}ms linear`
+      el.style.transform = 'translateY(0) scale(1)'
+    })
+  }, [timeLimitMs])
 
   return (
-    <button
-      onClick={push}
-      disabled={!present}
+    <div
+      onClick={onSuccess}
+      role="button"
       style={{
+        position: 'absolute',
+        ...DOOR_POSITION,
+        zIndex: 9,
+        cursor: 'pointer',
         display: 'flex',
-        alignItems: 'center',
-        gap: '.5cqw',
-        fontFamily: "'Bungee'",
-        fontSize: '1cqw',
-        color: '#fff4d8',
-        background: '#16201c',
-        border: 'none',
-        borderRadius: '.6cqw',
-        padding: '.6cqw .9cqw',
-        cursor: present ? 'pointer' : 'default',
-        opacity: present ? 1 : 0.5,
+        alignItems: 'flex-end',
+        justifyContent: 'center',
         overflow: 'hidden',
       }}
     >
-      <span
-        style={{
-          display: 'inline-block',
-          width: '1.6cqw',
-          height: '1.6cqw',
-          borderRadius: '50% 50% 0 0',
-          background: '#fff4d8',
-          transition: 'transform .3s ease',
-          transform: present ? 'translateX(0)' : 'translateX(150%)',
-        }}
+      <SceneEventLabel
+        name="LE PRÊTRE"
+        accent="#ffb020"
+        timeLimitMs={timeLimitMs}
       />
-      REPOUSSER
-    </button>
+      <div
+        ref={figureRef}
+        style={{
+          position: 'relative',
+          width: '65%',
+          marginBottom: '4%',
+          filter: 'drop-shadow(0 0 .4cqw #ffe9a8)',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            height: '4.4cqw',
+            background: '#0a0c0b',
+            border: '0.25cqw solid #ffe9a8',
+            borderRadius: '1.4cqw 1.4cqw 0 0',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '-2.6cqw',
+            transform: 'translateX(-50%)',
+            width: '2.4cqw',
+            height: '2.4cqw',
+            borderRadius: '50%',
+            background: '#0a0c0b',
+            border: '0.25cqw solid #ffe9a8',
+          }}
+        />
+      </div>
+    </div>
   )
 }

@@ -3,6 +3,7 @@ import { PerfusionVide } from '#/components/events/PerfusionVide'
 import { EkgPlat } from '#/components/events/EkgPlat'
 import { CableDebranche } from '#/components/events/CableDebranche'
 import { Oxygene } from '#/components/events/Oxygene'
+import { Moustique } from '#/components/events/Moustique'
 import { Pretre } from '#/components/events/Pretre'
 import { Lever } from '#/components/events/Lever'
 import { FamilleTelephone } from '#/components/events/FamilleTelephone'
@@ -16,9 +17,6 @@ const Dentier = (p: MiniGameProps) => (
 )
 const Tension = (p: MiniGameProps) => (
   <ClickToResolve {...p} actionLabel="STABILISER" />
-)
-const Moustique = (p: MiniGameProps) => (
-  <ClickToResolve {...p} actionLabel="ÉCRASER" />
 )
 
 export const EVENT_REGISTRY: Record<EventKind, EventDef> = {
@@ -61,6 +59,7 @@ export const EVENT_REGISTRY: Record<EventKind, EventDef> = {
     timeLimitMs: 8000,
     statKey: 'crises',
     Component: Moustique,
+    placement: 'scene',
   },
   'perfusion-vide': {
     kind: 'perfusion-vide',
@@ -105,12 +104,13 @@ export const EVENT_REGISTRY: Record<EventKind, EventDef> = {
   pretre: {
     kind: 'pretre',
     name: 'LE PRÊTRE',
-    desc: 'Il rôde déjà. Repousse-le.',
+    desc: 'Il approche par la porte. Ferme-la-lui au nez.',
     accent: '#ffb020',
     anim: 'none',
     timeLimitMs: 9000,
     statKey: 'crises',
     Component: Pretre,
+    placement: 'scene',
   },
   lever: {
     kind: 'lever',

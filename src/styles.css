@@ -153,3 +153,31 @@ body {
     transform: translateX(-3%);
   }
 }
+@keyframes mosquitoFly {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(1.2cqw, -0.8cqw) rotate(8deg);
+  }
+  40% {
+    transform: translate(-0.6cqw, 0.6cqw) rotate(-6deg);
+  }
+  60% {
+    transform: translate(0.9cqw, 0.4cqw) rotate(5deg);
+  }
+  80% {
+    transform: translate(-1cqw, -0.5cqw) rotate(-8deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+@keyframes raysSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
